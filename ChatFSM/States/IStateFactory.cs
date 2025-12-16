@@ -1,8 +1,7 @@
 ﻿namespace ChatFSM.States;
 
-public interface IStateFactory<in TState, in TContext, TInput>
-    where TState : Enum
+public interface IStateFactory<in TStateDescriptor, in TContext, TInput>
     where TContext : class
 {
-    IState<TContext, TInput> Create(TState state);
+    IState<TContext, TInput> Create(TStateDescriptor state);
 }
