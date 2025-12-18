@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.AppHost", "BookSho
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.ServiceDefaults", "BookShop.ServiceDefaults\BookShop.ServiceDefaults.csproj", "{253C6D11-15C9-BE54-BC8E-C780DC90ED41}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chat", "Chat", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSM", "..\ChatFSM\FSM.csproj", "{574ABFEA-8DEA-341F-923E-BD1376558ACC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,9 +25,16 @@ Global
 		{253C6D11-15C9-BE54-BC8E-C780DC90ED41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{253C6D11-15C9-BE54-BC8E-C780DC90ED41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{253C6D11-15C9-BE54-BC8E-C780DC90ED41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{574ABFEA-8DEA-341F-923E-BD1376558ACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{574ABFEA-8DEA-341F-923E-BD1376558ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{574ABFEA-8DEA-341F-923E-BD1376558ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{574ABFEA-8DEA-341F-923E-BD1376558ACC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{574ABFEA-8DEA-341F-923E-BD1376558ACC} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {023AB1A4-B15B-4A40-96F2-2AA79383D6C3}
