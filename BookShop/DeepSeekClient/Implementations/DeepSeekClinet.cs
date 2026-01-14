@@ -1,7 +1,6 @@
 ﻿using DeepSeekClient.Configs;
 using DeepSeekClient.Domain;
 using Microsoft.Extensions.Options;
-using OpenAI.Images;
 using System.Text;
 using System.Text.Json;
 
