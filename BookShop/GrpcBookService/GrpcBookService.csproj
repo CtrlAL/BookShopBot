@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="Features\BooksManagment\Protos\greet.proto" GrpcServices="Server" />
 	<Protobuf Include="Features\BooksManagment\Protos\book_service.proto" GrpcServices="Server" />
   </ItemGroup>
 

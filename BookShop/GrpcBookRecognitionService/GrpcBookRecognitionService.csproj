@@ -16,10 +16,12 @@
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
 	  <Protobuf Include="Features\BookRecognition\Protos\book.recognition.proto" GrpcServices="Server" />
+	  <Protobuf Include="Features\BookRecognition\Protos\book_service.proto" GrpcServices="Client" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BookShop.ServiceDefaults\BookShop.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\DeepSeekClient\DeepSeek.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,6 +11,18 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+builder.Services.AddGrpcClient<BookService.V1.BookCatalogService.BookCatalogServiceClient>(options =>
+{
+    options.Address = new Uri("http://book-catalog-service:5000");
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    var handler = new HttpClientHandler();
+    handler.ServerCertificateCustomValidationCallback =
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+    return handler;
+});
+
 app.MapGrpcService<BookRecognitionGrpcService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
