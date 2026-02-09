@@ -7,7 +7,7 @@ namespace DeepSeek
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddDeepSeekCline(IServiceCollection services, IConfigurationSection section)
+        public static IServiceCollection AddDeepSeekClient(this IServiceCollection services, IConfigurationSection section)
         {
             services.Configure<DeepSeekConfig>(section);
             services.AddSingleton<DeepSeekVisionService>();
