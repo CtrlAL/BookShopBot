@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package book.recognition.v1;
+
+service BookRecognitionService {
+  rpc RecognizeBook (RecognizeBookRequest) returns (RecognizeBookResponse);
+
+  rpc RecognizeBooks (RecognizeBooksRequest) returns (RecognizeBooksResponse);
+}
+
+message RecognizeBookRequest {
+  bytes image_data = 1;
+
+  ImageFormat image_format = 2;
+}
+
+message RecognizeBooksRequest {
+  repeated BookImage images = 1;
+}
+
+message BookImage {
+  bytes image_data = 1;
+  ImageFormat image_format = 2;
+}
+
+enum ImageFormat {
+  JPEG = 0;
+  PNG = 1;
+  WEBP = 2;
+}
+
+message RecognizeBookResponse {
+  bool recognized = 1;
+
+  bool book_created_in_catalog = 2;
+  
+  optional BookInfo book_info = 3;
+  
+  optional string catalog_book_id = 4;
+  
+  string message = 5;
+}
+
+message RecognizeBooksResponse {
+  repeated BookRecognitionResult results = 1;
+
+  int32 total_images = 2;
+  int32 successfully_recognized = 3;
+  int32 books_created_in_catalog = 4;
+}
+
+message BookRecognitionResult {
+  int32 image_index = 1;
+
+  bool recognized = 2;
+  
+  bool book_created_in_catalog = 3;
+ 
+  optional BookInfo book_info = 4;
+
+  optional string catalog_book_id = 5;
+  
+  // Сообщение
+  string message = 6;
+}
+
+message BookInfo {
+  string title = 1;
+  repeated string authors = 2;
+  optional string publisher = 3;
+  optional int32 publication_year = 4;
+  optional string isbn = 5;
+  optional string language = 6;
+}
