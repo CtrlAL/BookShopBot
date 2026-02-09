@@ -1,9 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GrpcBookService.Features.BooksManagment.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace GrpcBookService.Shared
 {
     public class DefaultDbContext : DbContext
     {
+        public DbSet<Book> Users { get; set; }
+
         protected DefaultDbContext()
         {
         }

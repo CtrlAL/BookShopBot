@@ -1,7 +1,6 @@
 using GrpcBookService.Features.BooksManagment.Services;
 using GrpcBookService.Shared;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 

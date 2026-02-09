@@ -21,5 +21,4 @@
         public string? Language { get; set; }
         public double Confidence { get; set; }
     }
-
 }
