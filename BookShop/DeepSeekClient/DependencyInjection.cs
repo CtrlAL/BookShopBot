@@ -9,8 +9,11 @@ namespace DeepSeek
     {
         public static IServiceCollection AddDeepSeekCline(IServiceCollection services, IConfigurationSection section)
         {
-            services.Configure<DeepSeekConfig>(section);
+            //services.Configure<DeepSeekConfig>();
+            services.Configure<DeepSeekConfig>(dwd);
 
+
+            //services.Configure<DeepSeekConfig>();
             services.AddSingleton<DeepSeekVisionService>();
             services.AddSingleton<DeepSeekClient>();
 

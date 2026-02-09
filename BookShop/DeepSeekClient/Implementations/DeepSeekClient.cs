@@ -1,7 +1,6 @@
-﻿using DeepSeekClient.Configs;
-using DeepSeekClient.Domain;
-using DeepSeekClient.Implementations;
-using DeepSeekClient.ToolBuilder;
+﻿using DeepSeek.Configs;
+using DeepSeek.Domain;
+using DeepSeek.ToolBuilder;
 using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Chat;
