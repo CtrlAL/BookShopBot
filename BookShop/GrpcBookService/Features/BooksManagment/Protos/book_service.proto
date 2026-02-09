@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package book_service.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+message Book {
+  string title = 1;
+  string author = 2;
+  google.protobuf.StringValue publishing_house = 3;
+  google.protobuf.Int32Value year = 4;
+  google.protobuf.StringValue isbn = 5;
+  google.protobuf.StringValue language = 6;
+  double confidence = 7;
+}
+
+message CreateBookRequest {
+  Book book = 1;
+}
+
+message CreateBookResponse {
+  int32 book_id = 1;
+  Book created_book = 2;
+}
+
+message GetBookRequest {
+  int32 book_id = 1;
+}
+
+message SearchBooksRequest {
+  google.protobuf.StringValue title = 1;
+  google.protobuf.StringValue author = 2;
+  google.protobuf.Int32Value year_from = 3;
+  google.protobuf.Int32Value year_to = 4;
+  double min_confidence = 5;
+}
+
+message SearchBooksResponse {
+  repeated Book books = 1;
+  int32 total_count = 2;
+}
+
+service BookCatalogService {
+  rpc CreateBook (CreateBookRequest) returns (CreateBookResponse);
+  rpc GetBook (GetBookRequest) returns (Book);
+  rpc SearchBooks (SearchBooksRequest) returns (SearchBooksResponse);
+  rpc UpdateBook (UpdateBookRequest) returns (Book);
+  rpc DeleteBook (DeleteBookRequest) returns (google.protobuf.Empty);
+}
+
+message UpdateBookRequest {
+  int32 book_id = 1;
+  google.protobuf.StringValue title = 2;
+  google.protobuf.StringValue author = 3;
+  google.protobuf.StringValue publishing_house = 4;
+  google.protobuf.Int32Value year = 5;
+  google.protobuf.StringValue isbn = 6;
+  google.protobuf.StringValue language = 7;
+  google.protobuf.DoubleValue confidence = 8;
+}
+
+message DeleteBookRequest {
+  int32 book_id = 1;
+}

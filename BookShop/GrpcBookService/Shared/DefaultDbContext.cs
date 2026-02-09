@@ -1,5 +1,5 @@
-﻿using GrpcBookService.Features.BooksManagment.Domain;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using GrpcBookService.Features.BooksManagment.Domain;
 
 namespace GrpcBookService.Shared
 {
