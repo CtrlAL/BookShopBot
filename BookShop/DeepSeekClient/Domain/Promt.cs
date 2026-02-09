@@ -1,4 +1,4 @@
-﻿namespace DeepSeekClient.Domain
+﻿namespace DeepSeek.Domain
 {
     public class Promt
     {

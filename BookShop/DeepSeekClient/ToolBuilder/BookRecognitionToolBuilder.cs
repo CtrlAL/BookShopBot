@@ -1,8 +1,8 @@
 ﻿using OpenAI.Chat;
 
-namespace DeepSeekClient.ToolBuilder
+namespace DeepSeek.ToolBuilder
 {
-    public static class CreateBookRecognitionToolBuilder
+    public static class BookRecognitionToolBuilder
     {
         public static ChatTool Build()
         {

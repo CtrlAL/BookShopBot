@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepSeekClient.ToolBuilder
+namespace DeepSeek.ToolBuilder
 {
     public static class ExtractBookInfoToolBuilder
     {

@@ -1,9 +1,9 @@
-﻿using DeepSeekClient.Configs;
-using DeepSeekClient.Implementations;
+﻿using DeepSeek.Configs;
+using DeepSeek.Implementations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DeepSeekClient
+namespace DeepSeek
 {
     public static class DependencyInjection
     {

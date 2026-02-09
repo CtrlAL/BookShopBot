@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepSeekClient.Domain
+namespace DeepSeek.Domain
 {
     public class BookRecognitionResult
     {

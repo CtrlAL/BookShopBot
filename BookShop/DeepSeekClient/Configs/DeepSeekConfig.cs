@@ -1,4 +1,4 @@
-﻿namespace DeepSeekClient.Configs
+﻿namespace DeepSeek.Configs
 {
     public class DeepSeekConfig
     {

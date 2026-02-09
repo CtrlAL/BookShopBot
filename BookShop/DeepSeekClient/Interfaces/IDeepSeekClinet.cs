@@ -1,4 +1,4 @@
-﻿namespace DeepSeekClient.Interfaces
+﻿namespace DeepSeek.Interfaces
 {
     public interface IDeepSeekClinet
     {

@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace DeepSeekClient.Implementations
+namespace DeepSeek.Implementations
 {
     public class DeepSeekVisionService
     {
