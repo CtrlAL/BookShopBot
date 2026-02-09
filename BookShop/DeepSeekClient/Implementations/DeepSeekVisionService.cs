@@ -1,11 +1,8 @@
-﻿using DeepSeekClient.Configs;
+﻿using DeepSeek.Configs;
+using DeepSeek.Domain;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace DeepSeek.Implementations
 {
@@ -85,7 +82,6 @@ namespace DeepSeek.Implementations
 
         private string GetMimeType(byte[] imageBytes)
         {
-            // Простая проверка типа изображения
             if (imageBytes.Length > 1)
             {
                 if (imageBytes[0] == 0xFF && imageBytes[1] == 0xD8) return "image/jpeg";
@@ -93,7 +89,7 @@ namespace DeepSeek.Implementations
                 if (imageBytes[0] == 0x47 && imageBytes[1] == 0x49) return "image/gif";
                 if (imageBytes[0] == 0x42 && imageBytes[1] == 0x4D) return "image/bmp";
             }
-            return "image/jpeg"; // По умолчанию
+            return "image/jpeg";
         }
     }
 }
