@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11429.125 d18.3
+VisualStudioVersion = 18.3.11429.125
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.AppHost", "BookShop.AppHost\BookShop.AppHost.csproj", "{AE2EBD39-166A-4DA7-8102-379C25E386ED}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepSeek", "DeepSeekClient\DeepSeek.csproj", "{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ai", "Ai", "{F2E98E79-C30D-432B-AA92-B3CD9F16F791}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoreApi", "CoreApi", "{B66D80A0-432A-47A4-ABE4-3D4964A195C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrpcBookService", "GrpcBookService\GrpcBookService.csproj", "{5EEFEC68-6333-16D4-EB74-701DC65A98ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +41,10 @@ Global
 		{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EEFEC68-6333-16D4-EB74-701DC65A98ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EEFEC68-6333-16D4-EB74-701DC65A98ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EEFEC68-6333-16D4-EB74-701DC65A98ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EEFEC68-6333-16D4-EB74-701DC65A98ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +52,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{574ABFEA-8DEA-341F-923E-BD1376558ACC} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16} = {F2E98E79-C30D-432B-AA92-B3CD9F16F791}
+		{5EEFEC68-6333-16D4-EB74-701DC65A98ED} = {B66D80A0-432A-47A4-ABE4-3D4964A195C0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {023AB1A4-B15B-4A40-96F2-2AA79383D6C3}
