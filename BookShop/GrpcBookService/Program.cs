@@ -1,8 +1,15 @@
-using GrpcBookService.Services;
+using GrpcBookService.Features.BooksManagment.Services;
+using GrpcBookService.Shared;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.Services.AddDbContext<DefaultDbContext>(config 
+    => config.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnectionString"]));
+
 
 // Add services to the container.
 builder.Services.AddGrpc();
