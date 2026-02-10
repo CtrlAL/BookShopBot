@@ -1,4 +1,6 @@
+using BookService.V1;
 using DeepSeek;
+using Grpc.Net.Client;
 using GrpcBookRecognitionService.Features.BookRecognition.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,16 +9,29 @@ builder.AddServiceDefaults();
 
 builder.Services.AddDeepSeekClient(builder.Configuration.GetSection("DeepSeekConfig"));
 builder.Services.AddGrpc();
-builder.Services.AddGrpcClient<BookService.V1.BookCatalogService.BookCatalogServiceClient>(options =>
+
+builder.Services.AddSingleton(serviceProvider =>
 {
-    options.Address = new Uri("http://book-catalog-service:5000");
-})
-.ConfigurePrimaryHttpMessageHandler(() =>
-{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+    var address = configuration["GrpcBookService:Url"] ??
+                  configuration["Services:GrpcBookService:Url"] ??
+                  "http://book-catalog-service:5000";
+
     var handler = new HttpClientHandler();
     handler.ServerCertificateCustomValidationCallback =
         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-    return handler;
+
+    var httpClient = new HttpClient(handler);
+
+    var channel = GrpcChannel.ForAddress(address, new GrpcChannelOptions
+    {
+        HttpClient = httpClient,
+        MaxReceiveMessageSize = 1024 * 1024 * 100,
+        MaxSendMessageSize = 1024 * 1024 * 100,
+    });
+
+    return new BookCatalogService.BookCatalogServiceClient(channel);
 });
 
 var app = builder.Build();

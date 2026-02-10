@@ -60,7 +60,7 @@ message BookRecognitionResult {
 
   optional string catalog_book_id = 5;
   
-  // Сообщение
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
   string message = 6;
 }
 
