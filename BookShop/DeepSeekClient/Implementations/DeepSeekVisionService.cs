@@ -48,7 +48,6 @@ namespace DeepSeek.Implementations
                             }
                         }
                     },
-                    max_tokens = _config.MaxTokens,
                     temperature = _config.Temperature
                 };
 
