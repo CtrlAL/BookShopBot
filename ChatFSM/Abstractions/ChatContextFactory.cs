@@ -1,5 +1,4 @@
-﻿using ChatFSM.Fsm;
-using Fsm.Interfaces;
+﻿using Fsm.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Fsm.Abstractions;

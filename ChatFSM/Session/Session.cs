@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ChatFSM.Session;
+namespace Fsm.Session;
 
 public class Session<TState>
     where TState : Enum

@@ -1,4 +1,4 @@
-﻿namespace ChatFSM.Configuration;
+﻿namespace Fsm.Configuration;
 
 public interface IFsmConfigurator<in TStateMachine, in TContext>
     where TContext : class

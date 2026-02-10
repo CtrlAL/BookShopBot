@@ -1,6 +1,6 @@
 using Fsm.Interfaces;
 
-namespace ChatFSM.Fsm;
+namespace Fsm.Fsm;
 
 public interface IChatFsmContext<in TTrigger, in TInput> : IInitializeble
 {

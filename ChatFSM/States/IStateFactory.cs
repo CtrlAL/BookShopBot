@@ -1,4 +1,4 @@
-﻿namespace ChatFSM.States;
+﻿namespace Fsm.States;
 
 public interface IStateFactory<in TContext, TInput>
     where TContext : class

@@ -1,4 +1,4 @@
-namespace ChatFSM.States;
+namespace Fsm.States;
 
 public abstract class BaseState<TContext, TInput> : IState<TContext, TInput>
     where TContext : class

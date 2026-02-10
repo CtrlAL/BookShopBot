@@ -1,4 +1,4 @@
-﻿namespace ChatFSM.Session;
+﻿namespace Fsm.Session;
 
 public interface IChatSessionRepository<TSession>
     where TSession : class

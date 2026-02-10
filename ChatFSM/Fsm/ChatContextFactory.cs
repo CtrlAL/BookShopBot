@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Fsm.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace ChatFSM.Fsm;
+namespace Fsm.Interfaces;
 
 public class ChatContextFactory<TContext> : IChatContextFactory<TContext>
     where TContext : class, IInitializeble
@@ -12,10 +13,10 @@ public class ChatContextFactory<TContext> : IChatContextFactory<TContext>
         _serviceProvider = serviceProvider;
     }
 
-    public async Task<TContext> CreateContextAsync(long chatId)
+    public async Task<TContext> CreateContextAsync(params object[] attributes)
     {
         var context = _serviceProvider.GetRequiredService<TContext>();
-        await context.InitializeAsync(chatId);
+        await context.InitializeAsync(attributes);
 
         return context;
     }

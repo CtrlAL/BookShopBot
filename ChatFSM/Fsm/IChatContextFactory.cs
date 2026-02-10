@@ -1,4 +1,4 @@
-﻿namespace ChatFSM.Fsm;
+﻿namespace Fsm.Interfaces;
 
 public interface IChatContextFactory<TContext>
     where TContext : class
