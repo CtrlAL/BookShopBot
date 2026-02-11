@@ -35,15 +35,11 @@ namespace DeepSeek.Implementations
             {
                 var binaryData = new BinaryData(imageBytes);
 
-                var messages = new List<ChatMessage>
-                {
-                    new UserChatMessage(
-                        ChatMessageContentPart.CreateTextPart(prompt),
-                        ChatMessageContentPart.CreateImagePart(binaryData, GetMimeType(imageBytes))
-                    )
-                };
+                var message = new UserChatMessage(
+                    ChatMessageContentPart.CreateTextPart(prompt)
+                );
 
-                var response = await _chatClient.CompleteChatAsync(messages);
+                var response = await _chatClient.CompleteChatAsync(message);
 
                 return response.Value.Content[0].Text;
             }
