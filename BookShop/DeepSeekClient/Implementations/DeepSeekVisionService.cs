@@ -16,7 +16,7 @@ namespace DeepSeek.Implementations
             var config = options.Value ?? throw new ArgumentNullException(nameof(options));
 
             var openAiClient = new OpenAIClient(config.ApiKey);
-            
+
             var deepSeekOptions = new OpenAIClientOptions()
             {
                 Endpoint = new Uri(config.BaseUrl)
@@ -24,7 +24,7 @@ namespace DeepSeek.Implementations
 
             var credential = new ApiKeyCredential(config.ApiKey);
             var deepSeekClient = new OpenAIClient(credential, deepSeekOptions);
-            _chatClient = deepSeekClient.GetChatClient(config.Model);
+            _chatClient = deepSeekClient.GetChatClient(config.VisionModel);
         }
 
         public async Task<string> AnalyzeImageAsync(byte[] imageBytes, string prompt = "Опиши это изображение подробно")
@@ -36,7 +36,8 @@ namespace DeepSeek.Implementations
                 var binaryData = new BinaryData(imageBytes);
 
                 var message = new UserChatMessage(
-                    ChatMessageContentPart.CreateTextPart(prompt)
+                    ChatMessageContentPart.CreateTextPart(prompt),
+                    ChatMessageContentPart.CreateImagePart(binaryData, GetMimeType(imageBytes))
                 );
 
                 var response = await _chatClient.CompleteChatAsync(message);
