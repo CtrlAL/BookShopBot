@@ -25,14 +25,11 @@ namespace DeepSeek.Implementations
             var credential = new ApiKeyCredential(config.ApiKey);
             var deepSeekClient = new OpenAIClient(credential, deepSeekOptions);
             _chatClient = deepSeekClient.GetChatClient(config.Model);
-            _fileClient = openAiClient.GetOpenAIFileClient();
         }
 
         public async Task<string> AnalyzeImageAsync(byte[] imageBytes, string prompt = "Опиши это изображение подробно")
         {
             ArgumentNullException.ThrowIfNull(imageBytes);
-
-            string fileId = null;
 
             try
             {
@@ -41,8 +38,8 @@ namespace DeepSeek.Implementations
                 var messages = new List<ChatMessage>
                 {
                     new UserChatMessage(
-                        ChatMessageContentPart.CreateTextPart(prompt)
-                        //ChatMessageContentPart.CreateImagePart(binaryData, GetMimeType(imageBytes))
+                        ChatMessageContentPart.CreateTextPart(prompt),
+                        ChatMessageContentPart.CreateImagePart(binaryData, GetMimeType(imageBytes))
                     )
                 };
 
