@@ -1,80 +1,70 @@
 ﻿using DeepSeek.Configs;
-using DeepSeek.Domain;
 using Microsoft.Extensions.Options;
-using System.Text;
-using System.Text.Json;
+using OpenAI;
+using OpenAI.Chat;
+using System.ClientModel;
 
+#pragma warning disable OPENAI001
 namespace DeepSeek.Implementations
 {
     public class DeepSeekVisionService
     {
-        private readonly HttpClient _httpClient;
-        private readonly DeepSeekConfig _config;
+        private readonly ChatClient _chatClient;
 
         public DeepSeekVisionService(IOptions<DeepSeekConfig> options)
         {
-            _config = options.Value;
+            var config = options.Value ?? throw new ArgumentNullException(nameof(options));
 
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.ApiKey}");
-            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+            var openAiClient = new OpenAIClient(config.ApiKey);
+            
+            var deepSeekOptions = new OpenAIClientOptions()
+            {
+                Endpoint = new Uri(config.BaseUrl)
+            };
+
+            var credential = new ApiKeyCredential(config.ApiKey);
+            var deepSeekClient = new OpenAIClient(credential, deepSeekOptions);
+            _chatClient = deepSeekClient.GetChatClient(config.Model);
+            _fileClient = openAiClient.GetOpenAIFileClient();
         }
 
         public async Task<string> AnalyzeImageAsync(byte[] imageBytes, string prompt = "Опиши это изображение подробно")
         {
+            ArgumentNullException.ThrowIfNull(imageBytes);
+
+            string fileId = null;
+
             try
             {
-                string base64Image = Convert.ToBase64String(imageBytes);
-                string mimeType = GetMimeType(imageBytes);
+                var binaryData = new BinaryData(imageBytes);
 
-                var requestData = new
+                var messages = new List<ChatMessage>
                 {
-                    model = _config.VisionModel,
-                    messages = new[]
-                    {
-                        new
-                        {
-                            role = "user",
-                            content = new object[]
-                            {
-                                new { type = "text", text = prompt },
-                                new {
-                                    type = "image_url",
-                                    image_url = new {
-                                        url = $"data:{mimeType};base64,{base64Image}"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    temperature = _config.Temperature
+                    new UserChatMessage(
+                        ChatMessageContentPart.CreateTextPart(prompt)
+                        //ChatMessageContentPart.CreateImagePart(binaryData, GetMimeType(imageBytes))
+                    )
                 };
 
-                var json = JsonSerializer.Serialize(requestData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _chatClient.CompleteChatAsync(messages);
 
-                var response = await _httpClient.PostAsync($"{_config.BaseUrl}/chat/completions", content);
-                response.EnsureSuccessStatusCode();
-
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var responseObj = JsonSerializer.Deserialize<VisionApiResponse>(responseJson);
-
-                return responseObj?.Choices?[0]?.Message?.Content ?? "Не удалось получить описание";
+                return response.Value.Content[0].Text;
             }
-            catch (Exception ex)
+            catch(ClientResultException ex)
             {
-                throw new Exception($"Ошибка Vision API: {ex.Message}", ex);
+                return null;
             }
         }
 
         public async Task<string> AnalyzeBookCoverAsync(byte[] imageBytes)
         {
-            string prompt = "Опиши обложку этой книги максимально подробно. Укажи: " +
-                           "1. Весь текст на обложке (название, автор, издательство, год) " +
-                           "2. Внешний вид обложки (цвета, дизайн, иллюстрации) " +
-                           "3. Язык текста " +
-                           "4. Любые другие заметные детали";
+            const string prompt = """
+                Опиши обложку этой книги максимально подробно. Укажи:
+                1. Весь текст на обложке (название, автор, издательство, год)
+                2. Внешний вид обложки (цвета, дизайн, иллюстрации)
+                3. Язык текста
+                4. Любые другие заметные детали
+                """;
 
             return await AnalyzeImageAsync(imageBytes, prompt);
         }
@@ -87,6 +77,7 @@ namespace DeepSeek.Implementations
                 if (imageBytes[0] == 0x89 && imageBytes[1] == 0x50) return "image/png";
                 if (imageBytes[0] == 0x47 && imageBytes[1] == 0x49) return "image/gif";
                 if (imageBytes[0] == 0x42 && imageBytes[1] == 0x4D) return "image/bmp";
+                if (imageBytes[0] == 0x52 && imageBytes[1] == 0x49) return "image/webp";
             }
             return "image/jpeg";
         }
