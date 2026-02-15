@@ -4,10 +4,12 @@ namespace DeepSeek.ToolBuilder
 {
     public static class BookRecognitionToolBuilder
     {
+        public static string FunctionName = "RecognizeBook";
+
         public static ChatTool Build()
         {
             return ChatTool.CreateFunctionTool(
-                functionName: "RecognizeBook",
+                functionName: FunctionName,
                 functionDescription: "Распознает информацию о книге из описания",
                 functionParameters: BinaryData.FromBytes("""
                     {

@@ -4,11 +4,11 @@ namespace DeepSeek.ToolBuilder
 {
     public static class ExtractBookInfoToolBuilder
     {
-        public static string ToolName = "ExtractBookInfo";
+        public static string FunctionName = "ExtractBookInfo";
         public static ChatTool Build()
         {
             return ChatTool.CreateFunctionTool(
-                functionName: "ExtractBookInfo",
+                functionName: FunctionName,
                 functionDescription: "Извлекает структурированную информацию о книге из текстового описания",
                 functionParameters: BinaryData.FromBytes("""
                     {

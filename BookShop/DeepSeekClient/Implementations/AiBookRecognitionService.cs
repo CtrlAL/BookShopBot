@@ -115,7 +115,7 @@ namespace DeepSeek.Implementations
                 {
                     foreach (var toolCall in completion.ToolCalls)
                     {
-                        if (toolCall.FunctionName == "ExtractBookInfo")
+                        if (toolCall.FunctionName == ExtractBookInfoToolBuilder.FunctionName)
                         {
                             using JsonDocument doc = JsonDocument.Parse(toolCall.FunctionArguments);
                             var root = doc.RootElement;
