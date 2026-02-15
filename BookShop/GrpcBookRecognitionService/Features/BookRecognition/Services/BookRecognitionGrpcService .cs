@@ -8,10 +8,10 @@ namespace GrpcBookRecognitionService.Features.BookRecognition.Services
 {
     public class BookRecognitionGrpcService : BookRecognitionService.BookRecognitionServiceBase
     {
-        private readonly DeepSeekClient _deepSeekClient;
+        private readonly AiBookRecognitionService _deepSeekClient;
         private readonly BookCatalogService.BookCatalogServiceClient _bookCatalogServiceClient;
 
-        public BookRecognitionGrpcService(DeepSeekClient deepSeekClient, BookCatalogService.BookCatalogServiceClient bookCatalogServiceClient)
+        public BookRecognitionGrpcService(AiBookRecognitionService deepSeekClient, BookCatalogService.BookCatalogServiceClient bookCatalogServiceClient)
         {
             _deepSeekClient = deepSeekClient;
             _bookCatalogServiceClient = bookCatalogServiceClient;
