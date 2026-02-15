@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
+    <PackageReference Include="OllamaSharp" Version="5.4.16" />
 	  <Protobuf Include="Features\BookRecognition\Protos\book.recognition.proto" GrpcServices="Server" />
 	  <Protobuf Include="Features\BookRecognition\Protos\book_service.proto" GrpcServices="Client" />
   </ItemGroup>
