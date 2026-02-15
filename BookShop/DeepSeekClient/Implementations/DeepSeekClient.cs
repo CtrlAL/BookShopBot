@@ -22,12 +22,20 @@ namespace DeepSeek.Implementations
             _config = options.Value;
             _visionService = visionService;
 
-            var clientOptions = new OpenAIClientOptions()
+            if (!string.IsNullOrEmpty(_config.ApiKey))
             {
-                Endpoint = new Uri(_config.BaseUrl),
-            };
-            var credential = new ApiKeyCredential(_config.ApiKey);
-            _openAIClient = new OpenAIClient(credential, clientOptions);
+                var clientOptions = new OpenAIClientOptions()
+                {
+                    Endpoint = new Uri(_config.BaseUrl),
+                };
+
+                var credential = new ApiKeyCredential(_config.ApiKey);
+                _openAIClient = new OpenAIClient(credential, clientOptions);
+            }
+            else
+            {
+                _openAIClient = new OpenAIClient(_config.BaseUrl);
+            }
         }
 
         public async Task<BookRecognitionResult> AnalyzeBookImageAsync(byte[] imageBytes)

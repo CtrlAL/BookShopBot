@@ -1,4 +1,6 @@
 ﻿using DeepSeek.Configs;
+using DeepSeek.Domain;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using OpenAI;
 using OpenAI.Chat;
@@ -15,16 +17,24 @@ namespace DeepSeek.Implementations
         {
             var config = options.Value ?? throw new ArgumentNullException(nameof(options));
 
-            var openAiClient = new OpenAIClient(config.ApiKey);
+            OpenAIClient openAiClient;
 
-            var deepSeekOptions = new OpenAIClientOptions()
+            if (!string.IsNullOrEmpty(config.ApiKey))
             {
-                Endpoint = new Uri(config.BaseUrl)
-            };
+                var clientOptions = new OpenAIClientOptions()
+                {
+                    Endpoint = new Uri(config.BaseUrl),
+                };
 
-            var credential = new ApiKeyCredential(config.ApiKey);
-            var deepSeekClient = new OpenAIClient(credential, deepSeekOptions);
-            _chatClient = deepSeekClient.GetChatClient(config.VisionModel);
+                var credential = new ApiKeyCredential(config.ApiKey);
+                openAiClient = new OpenAIClient(credential, clientOptions);
+            }
+            else
+            {
+                openAiClient = new OpenAIClient(config.BaseUrl);
+            }
+
+            _chatClient = openAiClient.GetChatClient(config.VisionModel);
         }
 
         public async Task<string> AnalyzeImageAsync(byte[] imageBytes, string prompt = "Опиши это изображение подробно")
@@ -33,18 +43,21 @@ namespace DeepSeek.Implementations
 
             try
             {
-                var binaryData = new BinaryData(imageBytes);
-
                 var message = new UserChatMessage(
                     ChatMessageContentPart.CreateTextPart(prompt),
-                    ChatMessageContentPart.CreateImagePart(binaryData, GetMimeType(imageBytes))
+                    ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), GetMimeType(imageBytes))
                 );
 
-                var response = await _chatClient.CompleteChatAsync(message);
+                var options = new ChatCompletionOptions()
+                {
+                    ResponseFormat = ChatResponseFormat.CreateTextFormat(),
+                };
 
-                return response.Value.Content[0].Text;
+                var completion = await _chatClient.CompleteChatAsync(message);
+
+                return completion.Value.Content[0].Text;
             }
-            catch(ClientResultException ex)
+            catch (ClientResultException ex)
             {
                 return null;
             }
