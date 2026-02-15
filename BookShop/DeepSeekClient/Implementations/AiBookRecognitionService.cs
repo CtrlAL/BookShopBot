@@ -1,5 +1,5 @@
 ﻿using DeepSeek.Domain;
-using DeepSeek.ToolBuilder;using OpenAI;
+using DeepSeek.ToolBuilder;
 using OpenAI.Chat;
 using System.ClientModel;
 using System.Text.Json;
@@ -94,7 +94,7 @@ namespace DeepSeek.Implementations
         {
             try
             {
-                var bookExtractionTool = BookRecognitionToolBuilder.Build();
+                var bookExtractionTool = ExtractBookInfoToolBuilder.Build();
 
                 var options = new ChatCompletionOptions
                 {

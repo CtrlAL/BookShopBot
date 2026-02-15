@@ -4,6 +4,7 @@ namespace DeepSeek.ToolBuilder
 {
     public static class ExtractBookInfoToolBuilder
     {
+        public static string ToolName = "ExtractBookInfo";
         public static ChatTool Build()
         {
             return ChatTool.CreateFunctionTool(

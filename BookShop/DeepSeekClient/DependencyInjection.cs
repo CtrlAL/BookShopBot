@@ -19,20 +19,14 @@ namespace DeepSeek
 
                 ArgumentNullException.ThrowIfNull(options);
 
-                if (!string.IsNullOrEmpty(options.ApiKey))
+                var clientOptions = new OpenAIClientOptions()
                 {
-                    var clientOptions = new OpenAIClientOptions()
-                    {
-                        Endpoint = new Uri(options.BaseUrl),
-                    };
+                    Endpoint = new Uri(options.BaseUrl),
+                };
 
-                    var credential = new ApiKeyCredential(options.ApiKey);
-                    return new OpenAIClient(credential, clientOptions);
-                }
-                else
-                {
-                    return new OpenAIClient(options.BaseUrl);
-                }
+                var credential = new ApiKeyCredential(options.ApiKey);
+
+                return new OpenAIClient(credential, clientOptions);
             });
 
             services.AddScoped<ChatClient>(services =>
@@ -44,7 +38,7 @@ namespace DeepSeek
             });
 
             services.Configure<AiConfig>(section);
-            services.AddSingleton<AiBookRecognitionService>();
+            services.AddScoped<AiBookRecognitionService>();
 
             return services;
         }
