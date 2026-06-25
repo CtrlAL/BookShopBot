@@ -1,4 +1,5 @@
-﻿using DeepSeek.Configs;
+﻿using DeepSeek.Abstractions;
+using DeepSeek.Configs;
 using DeepSeek.Implementations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,32 +14,42 @@ namespace DeepSeek
     {
         public static IServiceCollection AddDeepSeekClient(this IServiceCollection services, IConfigurationSection section)
         {
-            services.AddScoped<OpenAIClient>(services =>
-            {
-                var options = services.GetRequiredService<IOptions<AiConfig>>().Value;
-
-                ArgumentNullException.ThrowIfNull(options);
-
-                var clientOptions = new OpenAIClientOptions()
-                {
-                    Endpoint = new Uri(options.BaseUrl),
-                };
-
-                var credential = new ApiKeyCredential(options.ApiKey);
-
-                return new OpenAIClient(credential, clientOptions);
-            });
-
-            services.AddScoped<ChatClient>(services =>
-            {
-                var aIClient = services.GetRequiredService<OpenAIClient>();
-                var options = services.GetRequiredService<IOptions<AiConfig>>().Value;
-
-                return aIClient.GetChatClient(options.Model);
-            });
+            var useMock = section.GetValue<bool>("UseMockAiService");
 
             services.Configure<AiConfig>(section);
-            services.AddScoped<AiBookRecognitionService>();
+
+            if (useMock)
+            {
+                services.AddScoped<IAiBookRecognitionService, MockAiBookRecognitionService>();
+            }
+            else
+            {
+                services.AddScoped<OpenAIClient>(services =>
+                {
+                    var options = services.GetRequiredService<IOptions<AiConfig>>().Value;
+
+                    ArgumentNullException.ThrowIfNull(options);
+
+                    var clientOptions = new OpenAIClientOptions()
+                    {
+                        Endpoint = new Uri(options.BaseUrl),
+                    };
+
+                    var credential = new ApiKeyCredential(options.ApiKey);
+
+                    return new OpenAIClient(credential, clientOptions);
+                });
+
+                services.AddScoped<ChatClient>(services =>
+                {
+                    var aIClient = services.GetRequiredService<OpenAIClient>();
+                    var options = services.GetRequiredService<IOptions<AiConfig>>().Value;
+
+                    return aIClient.GetChatClient(options.Model);
+                });
+
+                services.AddScoped<IAiBookRecognitionService, AiBookRecognitionService>();
+            }
 
             return services;
         }

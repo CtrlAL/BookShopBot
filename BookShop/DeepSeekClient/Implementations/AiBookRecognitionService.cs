@@ -1,4 +1,5 @@
-﻿using DeepSeek.Domain;
+﻿using DeepSeek.Abstractions;
+using DeepSeek.Domain;
 using DeepSeek.ToolBuilder;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -6,7 +7,7 @@ using System.Text.Json;
 
 namespace DeepSeek.Implementations
 {
-    public class AiBookRecognitionService
+    public class AiBookRecognitionService : IAiBookRecognitionService
     {
         private readonly ChatClient _chatClient;
 

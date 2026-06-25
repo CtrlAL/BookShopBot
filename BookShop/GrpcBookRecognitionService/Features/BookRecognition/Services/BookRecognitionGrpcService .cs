@@ -1,6 +1,6 @@
 ﻿using Book.Recognition.V1;
 using BookService.V1;
-using DeepSeek.Implementations;
+using DeepSeek.Abstractions;
 using Grpc.Core;
 using GrpcBookRecognitionService.Features.Mappers;
 
@@ -8,10 +8,10 @@ namespace GrpcBookRecognitionService.Features.BookRecognition.Services
 {
     public class BookRecognitionGrpcService : BookRecognitionService.BookRecognitionServiceBase
     {
-        private readonly AiBookRecognitionService _deepSeekClient;
+        private readonly IAiBookRecognitionService _deepSeekClient;
         private readonly BookCatalogService.BookCatalogServiceClient _bookCatalogServiceClient;
 
-        public BookRecognitionGrpcService(AiBookRecognitionService deepSeekClient, BookCatalogService.BookCatalogServiceClient bookCatalogServiceClient)
+        public BookRecognitionGrpcService(IAiBookRecognitionService deepSeekClient, BookCatalogService.BookCatalogServiceClient bookCatalogServiceClient)
         {
             _deepSeekClient = deepSeekClient;
             _bookCatalogServiceClient = bookCatalogServiceClient;
