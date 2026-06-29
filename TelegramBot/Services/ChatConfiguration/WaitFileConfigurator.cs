@@ -1,10 +1,10 @@
 ﻿using ChatFSM.Configuration;
-using S3Bot.TelegramBot.Enums;
-using S3Bot.TelegramBot.Interfaces;
-using S3Bot.TelegramBot.Interfaces.ChatConfiguration;
+using BookShop.TelegramBot.Enums;
+using BookShop.TelegramBot.Interfaces;
+using BookShop.TelegramBot.Interfaces.ChatConfiguration;
 using Stateless;
 
-namespace S3Bot.TelegramBot.Services.ChatConfiguration
+namespace BookShop.TelegramBot.Services.ChatConfiguration
 {
     internal class WaitFileConfigurator : ITelegramChatStateConfigurator
     {
@@ -21,7 +21,7 @@ namespace S3Bot.TelegramBot.Services.ChatConfiguration
             var stateHandler = _stateFactory.Create(State.WaitFile);
 
             stateConfig.OnEntryAsync(() => stateHandler.OnStateEnterAsync(context));
-            stateConfig.OnExitAsync(() => stateHandler.OnStateEnterAsync(context));
+            stateConfig.OnExitAsync(() => stateHandler.OnStateExitAsync(context));
 
             ConfigureTransitions(stateConfig);
         }

@@ -1,19 +1,19 @@
 ﻿using ChatFSM.States;
 using Microsoft.Extensions.Logging;
-using S3Bot.S3Tool.Interfaces;
-using S3Bot.TelegramBot.Enums;
-using S3Bot.TelegramBot.Interfaces;
+using BookShop.S3Tool.Interfaces;
+using BookShop.TelegramBot.Enums;
+using BookShop.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace S3Bot.TelegramBot.Services.States;
+namespace BookShop.TelegramBot.Services.States;
 
 public class WaitFileName : BaseState<ITelegramChatContext, Update>
 {
     private readonly ITelegramBotClient _botClient;
     private readonly IS3Service _s3Service;
     private readonly ILogger<WaitFileName> _logger;
-    private const string _uploadFolder = "S3BotUploads";
+    private const string _uploadFolder = "BookShopUploads";
 
     public WaitFileName(ITelegramBotClient botClient, IS3Service s3Service, ILogger<WaitFileName> logger)
     {
@@ -128,7 +128,7 @@ public class WaitFileName : BaseState<ITelegramChatContext, Update>
         {
             await _botClient.SendMessage(
             chatId: chatId,
-            text: $"✅ Ошибка во время загрузки файла!\n\n" +
+            text: $"❌ Ошибка во время загрузки файла!\n\n" +
                   $"📁 Имя: {session.FileName}\n",
             cancellationToken: ct);
 

@@ -1,10 +1,10 @@
-using S3Bot.TelegramBot.Enums;
-using S3Bot.TelegramBot.Interfaces;
-using S3Bot.TelegramBot.Interfaces.ChatConfiguration;
+using BookShop.TelegramBot.Enums;
+using BookShop.TelegramBot.Interfaces;
+using BookShop.TelegramBot.Interfaces.ChatConfiguration;
 using Stateless;
 using Telegram.Bot.Types;
 
-namespace S3Bot.TelegramBot.Services.Implementations;
+namespace BookShop.TelegramBot.Services.Implementations;
 
 public class ChatContext : ITelegramChatContext
 {

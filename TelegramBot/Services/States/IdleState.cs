@@ -1,10 +1,10 @@
 ﻿using ChatFSM.States;
-using S3Bot.TelegramBot.Enums;
-using S3Bot.TelegramBot.Interfaces;
+using BookShop.TelegramBot.Enums;
+using BookShop.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace S3Bot.TelegramBot.Services.States
+namespace BookShop.TelegramBot.Services.States
 {
     public class IdleState : BaseState<ITelegramChatContext, Update>
     {

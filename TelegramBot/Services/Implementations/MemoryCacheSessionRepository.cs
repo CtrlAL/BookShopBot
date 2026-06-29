@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using S3Bot.TelegramBot.Interfaces;
+using BookShop.TelegramBot.Interfaces;
 
-namespace S3Bot.TelegramBot.Services.Implementations
+namespace BookShop.TelegramBot.Services.Implementations
 {
     public class MemoryCacheSessionRepository : IMemoryCacheSessionRepository
     {

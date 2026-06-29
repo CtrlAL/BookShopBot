@@ -1,8 +1,8 @@
 ﻿using ChatFSM.States;
-using S3Bot.TelegramBot.Enums;
+using BookShop.TelegramBot.Enums;
 using Telegram.Bot.Types;
 
-namespace S3Bot.TelegramBot.Interfaces
+namespace BookShop.TelegramBot.Interfaces
 {
     public interface ITelegramStateFactory : IStateFactory<State, ITelegramChatContext, Update>
     {

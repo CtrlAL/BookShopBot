@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using S3Bot.TelegramBot.Configs;
-using S3Bot.TelegramBot.Services.Implementations;
+using BookShop.TelegramBot.Configs;
+using BookShop.TelegramBot.Services.Implementations;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace S3Bot.TelegramBot.Services.HostedServices
+namespace BookShop.TelegramBot.Services.HostedServices
 {
     public class TelegramBotHostedService : IHostedService
     {
@@ -53,8 +53,8 @@ namespace S3Bot.TelegramBot.Services.HostedServices
         private Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken ct)
         {
             var scope = _serviceScopeFactory.CreateScope();
-            var updateHadnler = scope.ServiceProvider.GetRequiredService<UpdateHandler>();
-            return updateHadnler.HandleUpdateAsync(bot, update, ct);
+            var updateHandler = scope.ServiceProvider.GetRequiredService<UpdateHandler>();
+            return updateHandler.HandleUpdateAsync(bot, update, ct);
         }
 
         private Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken ct)

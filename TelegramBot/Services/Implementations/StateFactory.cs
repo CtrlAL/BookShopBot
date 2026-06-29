@@ -1,11 +1,11 @@
 ﻿using ChatFSM.States;
 using Microsoft.Extensions.DependencyInjection;
-using S3Bot.TelegramBot.Enums;
-using S3Bot.TelegramBot.Interfaces;
-using S3Bot.TelegramBot.Services.States;
+using BookShop.TelegramBot.Enums;
+using BookShop.TelegramBot.Interfaces;
+using BookShop.TelegramBot.Services.States;
 using Telegram.Bot.Types;
 
-namespace S3Bot.TelegramBot.Services.Implementations
+namespace BookShop.TelegramBot.Services.Implementations
 {
     public class StateFactory : ITelegramStateFactory
     {

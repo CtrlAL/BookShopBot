@@ -1,4 +1,4 @@
-﻿namespace S3Bot.TelegramBot.Configs
+﻿namespace BookShop.TelegramBot.Configs
 {
     public class BotConfig
     {

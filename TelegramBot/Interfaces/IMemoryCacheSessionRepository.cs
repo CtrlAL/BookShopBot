@@ -1,7 +1,7 @@
 ﻿using ChatFSM.Session;
-using S3Bot.TelegramBot.Services.Implementations;
+using BookShop.TelegramBot.Services.Implementations;
 
-namespace S3Bot.TelegramBot.Interfaces
+namespace BookShop.TelegramBot.Interfaces
 {
     public interface IMemoryCacheSessionRepository : IChatSessionRepository<TelegramChatSession>
     {

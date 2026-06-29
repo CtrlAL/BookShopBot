@@ -1,4 +1,4 @@
-﻿namespace S3Bot.TelegramBot.Models
+﻿namespace BookShop.TelegramBot.Constants
 {
     public static class AllowedUsers
     {

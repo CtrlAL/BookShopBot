@@ -1,7 +1,7 @@
 ﻿using ChatFSM.Session;
-using S3Bot.TelegramBot.Enums;
+using BookShop.TelegramBot.Enums;
 
-namespace S3Bot.TelegramBot.Services.Implementations;
+namespace BookShop.TelegramBot.Services.Implementations;
 
 public class TelegramChatSession : Session<State>
 {

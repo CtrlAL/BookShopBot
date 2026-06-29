@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Fsm.Interfaces;
 
 public class ChatContextFactory<TContext> : IChatContextFactory<TContext>
-    where TContext : class, IInitializeble
+    where TContext : class, IInitializable
 {
     private readonly IServiceProvider _serviceProvider;
 

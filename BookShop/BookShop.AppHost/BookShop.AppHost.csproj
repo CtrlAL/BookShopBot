@@ -16,8 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChatApi\ChatApi.csproj" />
-    <ProjectReference Include="..\GrpcBookRecognitionService\GrpcBookRecognitionService.csproj" />
-    <ProjectReference Include="..\GrpcBookService\GrpcBookService.csproj" />
+    <ProjectReference Include="..\BookRecognitionService\BookRecognitionService.csproj" />
+    <ProjectReference Include="..\BookCatalogService\BookCatalogService.csproj" />
   </ItemGroup>
 
 </Project>

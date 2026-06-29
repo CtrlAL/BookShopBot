@@ -2,15 +2,15 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using S3Bot.TelegramBot.Configs;
-using S3Bot.TelegramBot.Interfaces;
-using S3Bot.TelegramBot.Interfaces.ChatConfiguration;
-using S3Bot.TelegramBot.Services.ChatConfiguration;
-using S3Bot.TelegramBot.Services.Implementations;
-using S3Bot.TelegramBot.Services.States;
+using BookShop.TelegramBot.Configs;
+using BookShop.TelegramBot.Interfaces;
+using BookShop.TelegramBot.Interfaces.ChatConfiguration;
+using BookShop.TelegramBot.Services.ChatConfiguration;
+using BookShop.TelegramBot.Services.Implementations;
+using BookShop.TelegramBot.Services.States;
 using Telegram.Bot;
 
-namespace S3Bot.TelegramBot.Extensions
+namespace BookShop.TelegramBot.Extensions
 {
     public static class DiExtensions
     {

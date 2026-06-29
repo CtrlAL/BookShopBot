@@ -1,4 +1,4 @@
-namespace S3Bot.TelegramBot.Enums;
+namespace BookShop.TelegramBot.Enums;
 
 public enum State
 {
