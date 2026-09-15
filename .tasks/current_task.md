@@ -1,57 +1,90 @@
-# Task: Test Infrastructure — зелёный baseline для TDD
+# Task: Cache-aside сессии (IChatSessionRepository + InMemoryCache, Redis-ready)
 
 ## Context & Objective
 
-Репозиторий `BookShopBot` (решение `BookShop/BookShop.sln`, .NET 8) не имеет ни одного
-тестового проекта: `dotnet test` выполняет 0 тестов. Правило TDD Invariant
-(`.opencode/rules.md`) требует падающего теста до кода реализации, но без тест-инфраструктуры
-это невозможно. Задача — создать тестовый проект `tests/BookShopBot.Tests` (xUnit, net8.0),
-добавить его в решение и написать структурный smoke-тест, который падает при нарушении
-состава решения (ключевые проекты обязаны присутствовать). Цель — зелёный `dotnet test`
-с реально выполняющимися тестами и готовый каркас для последующих ADD-задач.
+По дизайн-решению текущий FSM-бот держит состояние сессий в `IMemoryCache` (TelegramBot/MemoryCacheSessionRepository). Нужна архитектура cache-aside:
+
+- **Store (источник правды)**: PostgreSQL (JSONB-таблица `chat_sessions`) + заглушка `InMemoryChatSessionRepository` для dev/тестов.
+- **Cache (горячий путь)**: `IMemoryCache` перед store, никакого запроса в БД при каждом удержании сессии; оптимальный TTL; API готов к замене `IMemoryCache` -> Redis.
+- Уже существующий контракт `Fsm.Session.IChatSessionRepository<TSession>` (GetOrCreateAsync / SaveAsync / RemoveAsync / ExistsAsync) не меняется — добавляются реализации и декоратор.
+
+Важное ограничение окружения: `TelegramBot` больше не имеет `.csproj` и не входит в `BookShop.sln`, поэтому его **не трогаем**. Весь новый код размещается в `ChatFSM/Fsm.csproj` (проект входит в решение и валидируется пайплайном). Docker-демон на этой машине не запущен (`docker info` -> exit 1), поэтому функциональный интеграционный тест постгрэса переносится в отдельную задачу с Testcontainers; в этой задаче PostgreSQL-репозиторий покрывается unit-тестами сериализации и проверяется компиляцией.
 
 ## Interface Contract
 
-`N/A` — инфраструктурная задача, публичное API приложений не меняется. Изменяется только
-состав решения (`BookShop/BookShop.sln`) и добавляются тестовые файлы.
-
-Ожидаемые открытые типы тестового проекта:
+Существующий контракт (НЕ меняется):
 
 ```csharp
-// tests/BookShopBot.Tests/SmokeTests.cs
-public sealed class SolutionStructureTests
+public interface IChatSessionRepository<TSession> where TSession : class
 {
-    // Читает BookShop/BookShop.sln (путь задаётся относительно корня репозитория)
-    // и утверждает, что решение содержит Project-записи для csproj:
-    //   - GrpcBookService.csproj
-    //   - GrpcBookRecognitionService.csproj
-    //   - TelegramBot.csproj
-    //   - ChatFSM\Fsm.csproj
-    //   - BookShopBot.Tests.csproj
-    [Fact]
-    public void Solution_contains_core_projects(); // при их отсутствии — падает
+    Task<TSession> GetOrCreateAsync(long chatId);
+    Task SaveAsync(TSession session);
+    Task RemoveAsync(long chatId);
+    Task<bool> ExistsAsync(long chatId);
+}
+```
+
+Новые типы в `ChatFSM/Session`:
+
+```csharp
+namespace Fsm.Session;
+
+// Опции кэша. Дефолты = "оптимальный TTL" для длинного маркетплейс-воркфлоу:
+// сессия жива при активности (sliding 20 мин), жёсткий предел 2 часа.
+public sealed class SessionCacheOptions
+{
+    public TimeSpan SlidingExpiration { get; set; } = TimeSpan.FromMinutes(20);
+    public TimeSpan AbsoluteExpiration { get; set; } = TimeSpan.FromHours(2);
+}
+
+// Thread-safe in-memory store (dev/test минима; Redis-заменитель на этом же контракте).
+public sealed class InMemoryChatSessionRepository<TSession> : IChatSessionRepository<TSession> where TSession : class
+{
+    public InMemoryChatSessionRepository(); // создаёт TSession через Activator.CreateInstance на miss
+}
+
+// Декоратор cache-aside:
+//   GetOrCreateAsync  — read-through: cache hit => вернуть; miss => store.GetOrCreateAsync + Set в cache;
+//   SaveAsync         — write-through: store + (пере)запись cache;
+//   RemoveAsync       — cache.Remove + store.RemoveAsync;
+//   ExistsAsync       — cache-проверка, при miss — store.
+// Пост-выселение из IMemoryCache никаких persist-операций не делает (SaveAsync уже write-through).
+public sealed class CachedChatSessionRepository<TSession> : IChatSessionRepository<TSession> where TSession : class
+{
+    public CachedChatSessionRepository(
+        IChatSessionRepository<TSession> store,
+        Microsoft.Extensions.Caching.Memory.IMemoryCache cache,
+        Microsoft.Extensions.Options.IOptions<SessionCacheOptions> options,
+        Microsoft.Extensions.Logging.ILogger<CachedChatSessionRepository<TSession>> logger);
+}
+
+// PostgreSQL store: таблица chat_sessions(chat_id bigint PK, payload jsonb, updated_at timestamptz),
+// upsert (INSERT ... ON CONFLICT (chat_id) DO UPDATE). Сериализация через System.Text.Json.
+public sealed class PostgresChatSessionRepository<TSession> : IChatSessionRepository<TSession> where TSession : class
+{
+    public PostgresChatSessionRepository(NpgsqlDataSource dataSource);
+}
+
+// DI-хелпер: регистрирует IMemoryCache, store в Scoped и декоратор поверх него.
+public static class ChatSessionRepositoryServiceCollectionExtensions
+{
+    public static IServiceCollection AddCachedChatSessionRepository<TSession, TStore>(this IServiceCollection services)
+        where TSession : class
+        where TStore : class, IChatSessionRepository<TSession>;
 }
 ```
 
 ## Acceptance Criteria
 
-- [ ] 1. Тест-проект `tests/BookShopBot.Tests/BookShopBot.Tests.csproj` создан
-      (xUnit, net8.0, `IsPackable=false`).
-- [ ] 2. Структурный smoke-тест `SolutionStructureTests.Solution_contains_core_projects`
-      написан ПЕРВЫМ (до добавления тестового проекта в решение) и «падает» —
-      TDD Invariant соблюдён: проверка на наличие проекта в решении не проходит,
-      пока проекта нет в `.sln`.
-- [ ] 3. Тестовый проект добавлен в `BookShop/BookShop.sln` (и только он; существующие
-      прочие записи решения не удаляются и не переименовываются).
-- [ ] 4. `dotnet test BookShop/BookShop.sln --no-build` обнаруживает и выполняет
-      >= 1 тест; smoke-тест проходит после добавления проекта в решение.
-- [ ] 5. `dotnet build BookShop/BookShop.sln --no-restore -p:WarningsAsErrors=CS*`
-      завершается без ошибок (0 CS-warnings; известные NU1902 / Grpc.Net.ClientFactory
-      предупреждения не трогать и не чинить — они задокументированы в `roadmap.md`).
-- [ ] 6. `dotnet format BookShop/BookShop.sln --verify-no-changes` проходит
-      (новые файлы отформатированы).
-- [ ] 7. Нет регрессий: файлы с кодом приложений (`BookShop/`, `ChatFSM/`, `TelegramBot/`)
-      НЕ изменяются этой задачей.
+- [ ] Критерий 1: `CachedChatSessionRepositoryTests` — повторный `GetOrCreateAsync` с тёплым кэшем **не** вызывает store (счётчик вызовов store по нулям); на miss store вызывается ровно 1 раз и результат попадает в кэш.
+- [ ] Критерий 2: `CachedChatSessionRepositoryTests` — write-through: `SaveAsync` обновляет и store, и кэш; `RemoveAsync` чистит оба; `ExistsAsync` за счёт кэша не ходит в store при тёплом кэше.
+- [ ] Критерий 3: `CachedChatSessionRepositoryTests` — выселение из `IMemoryCache` (via `GetOrCreate`/Compact + EvictionCallback) приводит к повторному обращению к store на следующем Get; TTL из `SessionCacheOptions` применяется (проверяется установкой 30-сек sliding/abs и принудительным `Remove`/выселением).
+- [ ] Критерий 4: `InMemoryChatSessionRepositoryTests` — GetOrCreate создаёт ровно один экземпляр на chatId, Get возвращает тот же; Save/Get round-trip; Exists; Remove.
+- [ ] Критерий 5: `SessionCacheOptionsTests` — дефолты 20 мин / 2 часа.
+- [ ] Критерий 6: `PostgresChatSessionRepositoryTests` — round-trip сериализации `Session<ТState>` в JSONB-совместимый json (CoreProperties, с `ActionCts`/JsonIgnore) и обратно; SQL-тексты upsert/select/delete не содержат инъекционных форматирований (используется параметризация).
+- [ ] Критерий 7: `dotnet build BookShop/BookShop.sln --no-restore -p:WarningsAsErrors=CS*` — 0 ошибок, **без новых CS-предупреждений** в добавленных файлах.
+- [ ] Критерий 8: `dotnet format BookShop/BookShop.sln --verify-no-changes` — проходит.
+- [ ] Критерий 9: нет регрессий (существующий `SmokeTests` + все прежние тесты зелёные).
 
 ## Affected Files
 
@@ -59,42 +92,33 @@ public sealed class SolutionStructureTests
 
 | Файл | Действие |
 |------|----------|
-| `tests/BookShopBot.Tests/BookShopBot.Tests.csproj` | создание |
-| `tests/BookShopBot.Tests/SmokeTests.cs` | создание |
-| `tests/BookShopBot.Tests/GlobalUsings.cs` | создание (опционально) |
-| `BookShop/BookShop.sln` | изменение (добавить `..\tests\BookShopBot.Tests\BookShopBot.Tests.csproj`) |
+| `ChatFSM/Session/SessionCacheOptions.cs` | создание |
+| `ChatFSM/Session/InMemoryChatSessionRepository.cs` | создание |
+| `ChatFSM/Session/CachedChatSessionRepository.cs` | создание |
+| `ChatFSM/Session/PostgresChatSessionRepository.cs` | создание |
+| `ChatFSM/Session/ChatSessionRepositoryServiceCollectionExtensions.cs` | создание |
+| `ChatFSM/Fsm.csproj` | изменение (разрешённые пакеты, см. Notes) |
+| `tests/BookShopBot.Tests/ChatFSM/InMemoryChatSessionRepositoryTests.cs` | создание |
+| `tests/BookShopBot.Tests/ChatFSM/CachedChatSessionRepositoryTests.cs` | создание |
+| `tests/BookShopBot.Tests/ChatFSM/SessionCacheOptionsTests.cs` | создание |
+| `tests/BookShopBot.Tests/ChatFSM/PostgresChatSessionRepositoryTests.cs` | создание |
+| `tests/BookShopBot.Tests/BookShopBot.Tests.csproj` | изменение (ProjectReference ChatFSM + пакеты) |
 
-> **Важно:** Разрешено добавлять NuGet-пакеты **только** из списка ниже (см. Notes).
-> Файлы реализации приложений и `.editorconfig` изменять запрещено.
+> **Важно:** Запрещено изменять файлы, не указанные в этом списке (включая `TelegramBot/*`, `ChatFSM`-файлы вне списка, `Session.cs`, существующие интерфейсы).
+> Если для выполнения задачи необходим доступ к другим файлам — добавьте их в список ДО начала работы.
 
 ## Validation Commands
 
 ```bash
-# Линтер / форматирование (порядок фиксирован в .opencode/rules.md)
 dotnet format BookShop/BookShop.sln --verify-no-changes --verbosity diagnostic
-
-# Статический анализ + компиляция
 dotnet build BookShop/BookShop.sln --no-restore -p:WarningsAsErrors=CS*
-
-# Тесты
 dotnet test BookShop/BookShop.sln --no-build --verbosity normal
 ```
 
 ## Notes
 
-- **Разрешённые новые NuGet-пакеты** (только они; versions — последние стабильные,
-  совместимые с net8.0):
-  - `Microsoft.NET.Test.Sdk`
-  - `xunit`
-  - `xunit.runner.visualstudio`
-- Тест-проект должен размещаться в `tests/BookShopBot.Tests/` (папки `tests/` пока нет —
-  создать). Относительный путь из `BookShop/BookShop.sln` — `..\tests\BookShopBot.Tests\BookShopBot.Tests.csproj`
-  (аналогично уже существующим относительным путям `..\..\ChatFSM` / `..\..\TelegramBot`,
-  проверить актуальную схему в `.sln`).
-- Smoke-тест ищет решение относительно корня репозитория (переходить от `AppContext.BaseDirectory`
-  вверх на 2 уровня, либо использовать `Directory.GetCurrentDirectory()` — выбрать надёжный
-  способ и зафиксировать маршрут до корня `BookShop/BookShop.sln`).
-- Известные предупреждения NU1902 (OpenTelemetry) и Grpc.Net.ClientFactory 2.63
-  считаются приемлемыми (см. `roadmap.md`) — НЕ «чинить».
-- Структура файлов должна соответствовать стилю репозитория (вкладки, file-scoped
-  namespace, `GlobalUsings` при необходимости).
+- TDD Invariant: перед реализацией каждого нового класса должны падать его тесты (см. критерии 1–6). Порядок: tests -> impl.
+- Разрешённые новые пакеты: `Microsoft.Extensions.Caching.Memory` (8.x), `Microsoft.Extensions.Logging.Abstractions` (8.x), `Microsoft.Extensions.Options` (8.x, если не транзитивен), `Npgsql` (8.x). Запрещены любые другие новые зависимости (Redis-cache-клиенты добавляются в задаче про Redis).
+- Docker-демон выключен -> реальный интеграционный тест PostgreSQL (Testcontainers) НЕ включать в эту задачу; `PostgresChatSessionRepository` покрывается unit-тестами сериализации + компиляцией. Интеграционный тест будет в отдельной задаче.
+- Существующие известные предупреждения вне белого списка (CS8603/CS0168 в `AiBookRecognitionService.cs`, CS8618 в `Session.cs`, CS8625/CS8629 в `BookMapper.cs`, NU1902/Grpc 2.63) НЕ чинить.
+- Валидация ходит по `BookShop/BookShop.sln`, поэтому логика обязана быть в проектах решения (ChatFSM — один из них); TelegramBot вне решения и остаётся нетронутым.

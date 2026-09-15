@@ -185,6 +185,16 @@ def build_agent_argv(agent_argv: list[str], prompt: str) -> list[str]:
     return agent_argv + [prompt]
 
 
+def repo_state(cwd: Path) -> str:
+    """Stable snapshot of the working tree (tracked diffs + untracked paths) to
+    detect no-op agent runs. Ignores mtime/content-bytes differences."""
+    rc, out = run_cmd(["git", "status", "--porcelain"], cwd, 60)
+    if rc != 0:
+        return ""
+    lines = sorted(out.splitlines())
+    return "\n".join(lines)
+
+
 # --------------------------------------------------------------------------- #
 # Validation pipeline
 # --------------------------------------------------------------------------- #
@@ -257,6 +267,9 @@ def main() -> int:
                         help="Skip the pre-run baseline validation")
     parser.add_argument("--no-require-tests", action="store_true",
                         help="Do not require a test project to exist (weaker TDD enforcement)")
+    parser.add_argument("--allow-noop", action="store_true",
+                        help="Accept an agent run that changed nothing on disk "
+                             "(default: a no-op is treated as a failed attempt)")
     parser.add_argument("--keep", action="store_true",
                         help="Keep generated prompt files under .tasks/.tmp/ for debugging")
     parser.add_argument("--root", default=str(ROOT),
@@ -314,10 +327,19 @@ def main() -> int:
             print(f"\n== prompt saved: {prompt_file}", flush=True)
 
         print(f"\n== [{attempt}/{max_iter}] invoking agent: {' '.join(agent_argv)}", flush=True)
+        before_state = repo_state(root)
         agent_rc, agent_out = run_cmd(build_agent_argv(agent_argv, prompt), root, args.timeout)
         print(f"== agent exit code: {agent_rc}", flush=True)
-
-        if agent_rc != 0:
+        if agent_rc != 0 or not args.allow_noop:
+            print("-- agent output tail (last 2000 chars):", flush=True)
+            print(agent_out[-2000:], flush=True)
+        after_state = repo_state(root)
+        if agent_rc == 0 and not args.allow_noop and before_state and after_state == before_state:
+            print("-- agent made NO changes on disk; treated as failed attempt (no-op)", flush=True)
+            failed += 1
+            last_stage, last_tail = "NOOP", "Agent run produced no file changes. It must "
+            last_tail += "create/modify files per the task spec (see Affected Files)."
+        elif agent_rc != 0:
             failed += 1
             last_stage = "AGENT"
             last_tail = agent_out[-STACKTRACE_TAIL:]
