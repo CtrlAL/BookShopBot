@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddDbContext<DefaultDbContext>(config 
+builder.Services.AddDbContext<DefaultDbContext>(config
     => config.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnectionString"]));
 
 
