@@ -14,7 +14,7 @@ public class ChatContext : ITelegramChatContext
 
     private bool _isInitialized = false;
 
-    public TelegramChatSession? Session { get ; private set; }
+    public TelegramChatSession Session { get; set; }
 
     public ChatContext(ITelegramChatFsmConfigurator fsmConfigurator,
         ITelegramStateFactory stateFactory,
@@ -24,13 +24,19 @@ public class ChatContext : ITelegramChatContext
         _memoryCacheSessionRepository = memoryCacheSessionRepository;
 
         _stateMachine = new StateMachine<State, Trigger>(
-            () => Session?.CurrentState ?? default, 
+            () => Session.CurrentState,
             async newState => await OnStateChangedAsync(newState));
 
         fsmConfigurator.Configure(_stateMachine, this);
     }
 
-    public async Task InitializeAsync(long chatId)
+    public Task InitializeAsync(params object[] attributes)
+    {
+        long chatId = attributes.Length > 0 && attributes[0] is long id ? id : 0;
+        return InitializeCoreAsync(chatId);
+    }
+
+    private async Task InitializeCoreAsync(long chatId)
     {
         if (_isInitialized) return;
 
