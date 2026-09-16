@@ -9,14 +9,18 @@ namespace Fsm.Session;
 /// Cache-aside decorator over <see cref="IChatSessionRepository{TSession}"/>:
 /// GetOrCreateAsync is read-through, SaveAsync is write-through, RemoveAsync
 /// clears both layers and ExistsAsync is served from the cache when warm.
-/// A post-eviction IMemoryCache callback performs no persistence because
-/// SaveAsync already keeps the store in sync.
+/// A post-eviction IMemoryCache callback performs no persistence (SaveAsync
+/// already keeps the store in sync) but cancels and disposes the session's
+/// <c>ActionCts</c> so background operation timers do not leak.
 /// </summary>
 public sealed class CachedChatSessionRepository<TSession> : IChatSessionRepository<TSession>
     where TSession : class
 {
     private static readonly PropertyInfo? ChatIdProperty =
         typeof(TSession).GetProperty("ChatId", BindingFlags.Instance | BindingFlags.Public);
+
+    private static readonly PropertyInfo? ActionCtsProperty =
+        typeof(TSession).GetProperty("ActionCts", BindingFlags.Instance | BindingFlags.Public);
 
     private readonly IChatSessionRepository<TSession> _store;
     private readonly IMemoryCache _cache;
@@ -107,7 +111,36 @@ public sealed class CachedChatSessionRepository<TSession> : IChatSessionReposito
             entryOptions.AbsoluteExpirationRelativeToNow = _options.AbsoluteExpiration;
         }
 
+        entryOptions.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
+        {
+            EvictionCallback = (_, evicted, _, _) =>
+            {
+                if (evicted is TSession session)
+                {
+                    CancelActionCts(session);
+                }
+            },
+        });
+
         _cache.Set(key, value, entryOptions);
+    }
+
+    private static void CancelActionCts(TSession session)
+    {
+        if (ActionCtsProperty?.PropertyType == typeof(CancellationTokenSource)
+            && ActionCtsProperty.GetValue(session) is CancellationTokenSource cts)
+        {
+            try
+            {
+                cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // CTS was already disposed by another path; nothing to cancel.
+            }
+
+            cts.Dispose();
+        }
     }
 
     private static long GetChatId(TSession session)
