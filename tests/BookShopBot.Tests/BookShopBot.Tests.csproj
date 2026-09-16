@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ChatFSM\Fsm.csproj" />
+    <ProjectReference Include="..\..\TelegramBot\TelegramBot.csproj" />
   </ItemGroup>
 
 </Project>

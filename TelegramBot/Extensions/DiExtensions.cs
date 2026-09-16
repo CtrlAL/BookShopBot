@@ -17,7 +17,6 @@ namespace BookShop.TelegramBot.Extensions
         public static void AddServices(this IServiceCollection services)
         {
             services.AddSingleton<IChatContextFactory<ITelegramChatContext>, ChatContextFactory<ITelegramChatContext>>();
-            services.AddSingleton<IMemoryCacheSessionRepository, MemoryCacheSessionRepository>();
             services.AddSingleton<ITelegramStateFactory, StateFactory>();
             services.AddSingleton<ITelegramChatFsmConfigurator, ChatFsmConfigurator>();
             services.AddScoped<ITelegramChatContext, ChatContext>();
