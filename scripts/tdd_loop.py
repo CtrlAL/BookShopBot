@@ -195,6 +195,12 @@ def repo_state(cwd: Path) -> str:
     return "\n".join(lines)
 
 
+def head_state(cwd: Path) -> str:
+    """Current commit SHA of HEAD ('' on failure)."""
+    rc, out = run_cmd(["git", "rev-parse", "HEAD"], cwd, 60)
+    return out.strip() if rc == 0 else ""
+
+
 # --------------------------------------------------------------------------- #
 # Validation pipeline
 # --------------------------------------------------------------------------- #
@@ -318,6 +324,12 @@ def main() -> int:
     last_tail = ""
     last_stage = ""
 
+    # Snapshot once at loop start so a timed-out attempt whose files already
+    # landed on disk is not later misjudged as a no-op (the no-op check compares
+    # against this baseline, not the pre-agent state of each attempt).
+    loop_start_state = repo_state(root)
+    loop_start_head = head_state(root)
+
     while attempt < max_iter:
         attempt += 1
         prompt = compose_prompt(attempt, spec, max_iter, feedback, baseline_fail)
@@ -327,14 +339,18 @@ def main() -> int:
             print(f"\n== prompt saved: {prompt_file}", flush=True)
 
         print(f"\n== [{attempt}/{max_iter}] invoking agent: {' '.join(agent_argv)}", flush=True)
-        before_state = repo_state(root)
         agent_rc, agent_out = run_cmd(build_agent_argv(agent_argv, prompt), root, args.timeout)
         print(f"== agent exit code: {agent_rc}", flush=True)
         if agent_rc != 0 or not args.allow_noop:
             print("-- agent output tail (last 2000 chars):", flush=True)
             print(agent_out[-2000:], flush=True)
         after_state = repo_state(root)
-        if agent_rc == 0 and not args.allow_noop and before_state and after_state == before_state:
+        after_head = head_state(root)
+        is_noop = (agent_rc == 0 and not args.allow_noop
+                   and loop_start_state
+                   and after_state == loop_start_state
+                   and after_head == loop_start_head)
+        if is_noop:
             print("-- agent made NO changes on disk; treated as failed attempt (no-op)", flush=True)
             failed += 1
             last_stage, last_tail = "NOOP", "Agent run produced no file changes. It must "
