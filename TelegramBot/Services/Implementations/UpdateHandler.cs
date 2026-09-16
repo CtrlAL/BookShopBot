@@ -1,4 +1,4 @@
-﻿using ChatFSM.Fsm;
+﻿using Fsm.Interfaces;
 using Microsoft.Extensions.Logging;
 using BookShop.TelegramBot.Interfaces;
 using Telegram.Bot;

@@ -1,4 +1,4 @@
-﻿using ChatFSM.States;
+﻿using Fsm.States;
 using BookShop.TelegramBot.Enums;
 using BookShop.TelegramBot.Interfaces;
 using Telegram.Bot;

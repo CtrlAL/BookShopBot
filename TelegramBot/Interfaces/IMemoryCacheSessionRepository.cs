@@ -1,4 +1,4 @@
-﻿using ChatFSM.Session;
+﻿using Fsm.Session;
 using BookShop.TelegramBot.Services.Implementations;
 
 namespace BookShop.TelegramBot.Interfaces

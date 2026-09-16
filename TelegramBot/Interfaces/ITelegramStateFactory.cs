@@ -1,10 +1,11 @@
-﻿using ChatFSM.States;
+﻿using Fsm.States;
 using BookShop.TelegramBot.Enums;
 using Telegram.Bot.Types;
 
 namespace BookShop.TelegramBot.Interfaces
 {
-    public interface ITelegramStateFactory : IStateFactory<State, ITelegramChatContext, Update>
+    public interface ITelegramStateFactory
     {
+        IState<ITelegramChatContext, Update> Create(State state);
     }
 }

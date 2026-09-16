@@ -1,4 +1,4 @@
-﻿using ChatFSM.Fsm;
+﻿using Fsm.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

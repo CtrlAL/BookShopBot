@@ -1,4 +1,4 @@
-﻿using ChatFSM.States;
+﻿using Fsm.States;
 using Microsoft.Extensions.DependencyInjection;
 using BookShop.TelegramBot.Enums;
 using BookShop.TelegramBot.Interfaces;
