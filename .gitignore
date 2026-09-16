@@ -5,6 +5,9 @@
 
 # User-specific files
 *.rsuser
+
+# Git worktrees (parallel task development)
+.worktrees/
 *.suo
 *.user
 *.userosscache
