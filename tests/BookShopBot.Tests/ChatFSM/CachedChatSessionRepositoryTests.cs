@@ -252,4 +252,52 @@ public sealed class CachedChatSessionRepositoryTests
 
         Assert.Equal(2, store.GetOrCreateCalls);
     }
+
+    [Fact]
+    public async Task Eviction_of_session_with_ActionCts_cancels_and_disposes_it()
+    {
+        using MemoryCache cache = CreateCache();
+        var store = new CountingStore();
+        var repository = CreateRepository(store, cache);
+
+        var session = await repository.GetOrCreateAsync(77);
+        var cts = new CancellationTokenSource();
+        session.ActionCts = cts;
+
+        await repository.SaveAsync(session);
+
+        cache.Compact(1.0);
+
+        Assert.True(SpinWait.SpinUntil(() => cts.IsCancellationRequested, TimeSpan.FromSeconds(1)));
+    }
+
+    [Fact]
+    public async Task Manual_remove_of_session_with_ActionCts_cancels_and_disposes_it()
+    {
+        using MemoryCache cache = CreateCache();
+        var store = new CountingStore();
+        var repository = CreateRepository(store, cache);
+
+        var session = await repository.GetOrCreateAsync(88);
+        var cts = new CancellationTokenSource();
+        session.ActionCts = cts;
+
+        await repository.SaveAsync(session);
+
+        cache.Remove("chat_session:88");
+
+        Assert.True(SpinWait.SpinUntil(() => cts.IsCancellationRequested, TimeSpan.FromSeconds(1)));
+    }
+
+    [Fact]
+    public async Task Eviction_of_session_with_null_ActionCts_does_not_throw()
+    {
+        using MemoryCache cache = CreateCache();
+        var store = new CountingStore();
+        var repository = CreateRepository(store, cache);
+
+        await repository.GetOrCreateAsync(99);
+
+        cache.Compact(1.0);
+    }
 }
