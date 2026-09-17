@@ -17,7 +17,7 @@ namespace BookRecognitionService.Features.Mappers
 
         public static RecognizeBookResponse MapToRecognizeBookResponse(
         CreateBookResponse catalogResponse,
-        BookInfo recognizedBookInfo = null)
+        BookInfo? recognizedBookInfo = null)
         {
             var response = new RecognizeBookResponse
             {
@@ -107,7 +107,7 @@ namespace BookRecognitionService.Features.Mappers
                 Title = book.Title,
                 Authors = { book.Author },
                 Publisher = book.PublishingHouse,
-                PublicationYear = book.Year.Value,
+                PublicationYear = book.Year ?? 0,
                 Isbn = book.Isbn,
                 Language = book.Language,
             };
