@@ -28,7 +28,16 @@ namespace BookAi.Implementations
         {
             try
             {
-                string imageDescription = await AnalyzeImageAsync(imageBytes);
+                string? imageDescription = await AnalyzeImageAsync(imageBytes);
+
+                if (string.IsNullOrEmpty(imageDescription))
+                {
+                    return new BookRecognitionResult
+                    {
+                        Success = false,
+                        Error = "Не удалось получить описание изображения"
+                    };
+                }
 
                 var result = await ExtractBookInfoFromDescriptionAsync(imageDescription);
 
@@ -50,7 +59,7 @@ namespace BookAi.Implementations
             }
         }
 
-        private async Task<string> AnalyzeImageAsync(byte[] imageBytes, string prompt = _prompt)
+        private async Task<string?> AnalyzeImageAsync(byte[] imageBytes, string prompt = _prompt)
         {
             ArgumentNullException.ThrowIfNull(imageBytes);
 
@@ -72,7 +81,7 @@ namespace BookAi.Implementations
 
                 return completion.Value.Content[0].Text;
             }
-            catch (ClientResultException ex)
+            catch (ClientResultException)
             {
                 return null;
             }
