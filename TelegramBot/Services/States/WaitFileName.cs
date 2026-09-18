@@ -112,7 +112,7 @@ public class WaitFileName : BaseState<ITelegramChatContext, Update>
 
         if (result)
         {
-            var fileUrl = _s3Service.GetPublicUrl(_uploadFolder, filename);
+            var fileUrl = _s3Service.GetPresignedUrl(_uploadFolder, filename);
 
             await chatContext.FireTriggerAsync(Trigger.FileNameReceived);
 
