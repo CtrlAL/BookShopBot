@@ -127,8 +127,13 @@ public sealed class S3ServiceTests
         S3Config? config = null,
         bool bucketExists = true)
     {
-        client.Setup(c => c.DoesS3BucketExistAsync(It.IsAny<string>(), default))
-            .ReturnsAsync(bucketExists);
+        client.Setup(c => c.ListBucketsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bucketExists
+                ? new ListBucketsResponse
+                {
+                    Buckets = new List<S3Bucket> { new S3Bucket { BucketName = "bookshop" } },
+                }
+                : new ListBucketsResponse());
         var options = Options.Create(config ?? new S3Config());
         return new S3Service(client.Object, options, NullLogger<S3Service>.Instance);
     }
@@ -175,7 +180,7 @@ public sealed class S3ServiceTests
         var url = service.GetPresignedUrl("BookShopUploads", "book.pdf");
 
         Assert.Contains("BookShopUploads/book.pdf", url);
-        client.Verify(c => c.GetPreSignedURL(It.Is<GetPreSignedURLRequest>(r =>
+        client.Verify(c => c.GetPreSignedURL(It.Is<GetPreSignedUrlRequest>(r =>
             r.Expires - DateTime.UtcNow >= TimeSpan.FromDays(364))), Times.Once);
     }
 
@@ -183,14 +188,14 @@ public sealed class S3ServiceTests
     public void GetPresignedUrl_uses_explicit_lifetime()
     {
         var client = new Mock<IAmazonS3>();
-        client.Setup(c => c.GetPreSignedURL(It.IsAny<GetPreSignedURLRequest>()))
+        client.Setup(c => c.GetPreSignedURL(It.IsAny<GetPreSignedUrlRequest>()))
             .Returns("http://presigned");
         var service = BuildService(client);
 
         var url = service.GetPresignedUrl("f", "n.png", TimeSpan.FromDays(2));
 
         Assert.Equal("http://presigned", url);
-        client.Verify(c => c.GetPreSignedURL(It.Is<GetPreSignedURLRequest>(r =>
+        client.Verify(c => c.GetPreSignedURL(It.Is<GetPreSignedUrlRequest>(r =>
             r.Expires - DateTime.UtcNow <= TimeSpan.FromDays(3))), Times.Once);
     }
 
@@ -221,7 +226,6 @@ Expected: не компилируется — `S3Service`/`S3Config` не сущ
 ```csharp
 using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Util;
 using BookShop.S3Tool.Configs;
 using BookShop.S3Tool.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -270,7 +274,7 @@ public sealed class S3Service : IS3Service
 
     public string GetPresignedUrl(string folder, string fileName, TimeSpan? lifetime = null)
     {
-        var request = new GetPreSignedURLRequest
+        var request = new GetPreSignedUrlRequest
         {
             BucketName = _config.Bucket,
             Key = BuildKey(folder, fileName),
@@ -297,7 +301,9 @@ public sealed class S3Service : IS3Service
                 return;
             }
 
-            bool exists = await AmazonS3Util.DoesS3BucketExistV2Async(_client, _config.Bucket).ConfigureAwait(false);
+            var listResponse = await _client.ListBucketsAsync().ConfigureAwait(false);
+            bool exists = listResponse.Buckets.Any(b =>
+                string.Equals(b.BucketName, _config.Bucket, StringComparison.Ordinal));
             if (!exists)
             {
                 await _client.PutBucketAsync(_config.Bucket).ConfigureAwait(false);
@@ -370,7 +376,7 @@ public static class DependencyInjection
 }
 ```
 
-Примечание: тест `CreateFile_calls_PutObject...` мокает метод интерфейса `IAmazonS3.DoesS3BucketExistAsync` (обёртка от `AmazonS3Util`). Если Moq не разрешит вызов — используем только `AmazonS3Util.DoesS3BucketExistV2Async` и сетапим его в тестах.
+Примечание: `DoesS3BucketExistAsync`/`DoesS3BucketExistV2Async` — это extension-методы из `AmazonS3Util`, их нельзя замокать через Moq. Поэтому проверка существования бакета в `S3Service` реализована через интерфейсный метод `IAmazonS3.ListBucketsAsync` (мокается) — этот же метод сетапится в тестах.
 
 - [ ] **Step 7: Запустить TDD-цикл и исправить нюансы моков**
 
@@ -378,6 +384,11 @@ Run: `dotnet test tests/BookShopBot.Tests/BookShopBot.Tests.csproj --filter Full
 Expected: PASS (5/5). Если падают pre-signed-замеры (~1s погрешности) — ослабить окна в тестах, не меняя прод-логику.
 
 - [ ] **Step 8: Полная валидация**
+
+Register in solution (иначе `dotnet build`/`dotnet format`/`dotnet test` на слаке не покроют проект):
+```
+dotnet sln BookShop/BookShop.sln add BookShop/S3Tool/S3Tool.csproj --solution-folder CoreApi
+```
 
 Run (из корня worktree):
 ```
@@ -391,7 +402,7 @@ Expected: build 0/0, format без правок, все тесты зелёны�
 - [ ] **Step 9: Commit**
 
 ```bash
-git add BookShop/S3Tool tests/BookShopBot.Tests/S3 tests/BookShopBot.Tests/BookShopBot.Tests.csproj
+git add BookShop/S3Tool BookShop/BookShop.sln tests/BookShopBot.Tests/S3 tests/BookShopBot.Tests/BookShopBot.Tests.csproj
 git commit -m "feat(s3): implement IS3Service on AWSSDK.S3 with presigned urls (MinIO-ready)"
 ```
 
@@ -600,7 +611,7 @@ public sealed class BotApiSmokeTests
 }
 ```
 
-Примечание: добавить в тестовый csproj `Microsoft.Extensions.Configuration` (пакет `Microsoft.Extensions.Configuration` версии 8.0.0) и `AddInMemoryCollection` (пакет `Microsoft.Extensions.Configuration.Memory`). Если `ConfigurationBuilder` из AddInMemoryCollection недоступен — вставить оба пакета.
+Примечание: в тестовый csproj добавить пакет `Microsoft.Extensions.Configuration` версии 8.0.0 — `AddInMemoryCollection` (namespace `Microsoft.Extensions.Configuration.Memory`) входит в этот пакет, отдельного пакета `Microsoft.Extensions.Configuration.Memory` не существует.
 
 - [ ] **Step 5: Создать Program.cs**
 
@@ -644,7 +655,7 @@ builder.Services.AddSingleton(serviceProvider =>
         MaxSendMessageSize = 10 * 1024 * 1024,
     });
 
-    return BookCatalogServiceClient.Create(channel);
+    return new BookCatalogService.BookCatalogServiceClient(channel);
 });
 
 builder.Services.AddHostedService<TelegramBotHostedService>();
@@ -657,7 +668,7 @@ app.MapGet("/", () => "BookShop Bot is running");
 await app.RunAsync();
 ```
 
-Примечание: `BookCatalogServiceClient.Create(channel)` — статический фабричный метод сгенерированного gRPC-клиента (`Google.Protobuf` + `Grpc.Net.Client`). Если его нет — использовать `new BookCatalogServiceClient(channel)`.
+Примечание: сгенерированный gRPC-клиент — вложенный тип `BookService.V1.BookCatalogService.BookCatalogServiceClient` (namespace из proto `package book_service.v1`). Статического `Create` нет — только конструкторы (от `GrpcChannel`/`CallInvoker`), используем `new BookCatalogService.BookCatalogServiceClient(channel)` (см. шаблон в `BookRecognitionService/Program.cs`).
 
 - [ ] **Step 6: Зарегистрировать BotApi в решении**
 
@@ -710,7 +721,7 @@ git commit -m "feat(botapi): add Telegram bot host with S3, sessions, gRPC catal
 
 `BookShop/BookShop.AppHost/BookShop.AppHost.csproj` — в `ItemGroup` с PackageReference добавить:
 ```xml
-    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.5.2" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.5.0" />
 ```
 
 - [ ] **Step 3: Переписать AppHost.cs**
@@ -792,7 +803,8 @@ git commit -m "feat(apphost): add Postgres, MinIO and BotApi to Aspire orchestra
 ### Task 5: Dockerfile + docker-compose + .env
 
 **Files:**
-- Create: `BookShop/Dockerfile` (единый multi-stage, `ARG SERVICE`)
+- Create: `Dockerfile` (единый multi-stage, `ARG SERVICE`, в корне репо — чтобы build-context включал `ChatFSM/`, `TelegramBot/`, `tests/`, `Directory.Build.props`)
+- Create: `.dockerignore`
 - Create: `docker-compose.yml`
 - Create: `.env.example`
 - Create: локальный `.env` (gitignored уже через `*.env`), если нужен для локального `docker compose up`
@@ -801,16 +813,16 @@ git commit -m "feat(apphost): add Postgres, MinIO and BotApi to Aspire orchestra
 - Consumes: BotApi (Task 3), существующие сервисы; протоколы: gRPC `book_service.v1`, health `/health`.
 - Produces: `docker compose up -d` поднимает Postgres + MinIO + 4 сервиса.
 
-- [ ] **Step 1: Создать Dockerfile**
+- [ ] **Step 1: Создать Dockerfile (в корне репо)**
 
-`BookShop/Dockerfile`:
+`Dockerfile` (в корне worktree):
 ```dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG SERVICE=BotApi
 WORKDIR /src
 
-COPY BookShop.sln ./
 COPY Directory.Build.props ./
+COPY BookShop/BookShop.sln ./BookShop/
 COPY ChatFSM/ ./ChatFSM/
 COPY TelegramBot/ ./TelegramBot/
 COPY BookShop/ ./BookShop/
@@ -818,8 +830,7 @@ COPY tests/ ./tests/
 
 RUN dotnet restore BookShop/BookShop.sln
 
-WORKDIR /src/BookShop
-RUN dotnet publish ${SERVICE}/${SERVICE}.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish BookShop/${SERVICE}/${SERVICE}.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
@@ -829,7 +840,24 @@ ENV SERVICE=${SERVICE}
 ENTRYPOINT ["sh", "-c", "dotnet /app/${SERVICE}.dll"]
 ```
 
-Примечание: `SERVICE` принимает имена `BotApi | BookCatalogService | BookRecognitionService | ChatApi` (совпадает с именами csproj). Для S3Tool/ServiceDefaults Dockerfile не нужен (библиотеки).
+Примечание: `SERVICE` принимает имена `BotApi | BookCatalogService | BookRecognitionService | ChatApi` (совпадает с именами csproj). Для S3Tool/ServiceDefaults Dockerfile не нужен (библиотеки). Dockerfile **обязательно в корне репозитория**, т.к. `dotnet restore` решения требует `ChatFSM/`, `TelegramBot/`, `tests/` и корневой `Directory.Build.props`, а build-context не может выходить за свою директорию.
+
+- [ ] **Step 1b: Создать .dockerignore**
+
+`.dockerignore` (в корне worktree):
+```
+**/bin/
+**/obj/
+**/.vs/
+**/.worktrees/
+**/node_modules/
+*.user
+Dockerfile
+docker-compose.yml
+.env
+.env.*
+!.env.example
+```
 
 - [ ] **Step 2: Создать docker-compose.yml**
 
@@ -863,15 +891,10 @@ services:
       - "9001:9001"
     volumes:
       - minio-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   catalog:
     build:
-      context: ./BookShop
+      context: .
       dockerfile: Dockerfile
       args:
         SERVICE: BookCatalogService
@@ -883,7 +906,7 @@ services:
 
   recognition:
     build:
-      context: ./BookShop
+      context: .
       dockerfile: Dockerfile
       args:
         SERVICE: BookRecognitionService
@@ -895,7 +918,7 @@ services:
 
   botapi:
     build:
-      context: ./BookShop
+      context: .
       dockerfile: Dockerfile
       args:
         SERVICE: BotApi
@@ -915,7 +938,7 @@ services:
 
   chatapi:
     build:
-      context: ./BookShop
+      context: .
       dockerfile: Dockerfile
       args:
         SERVICE: ChatApi
@@ -979,7 +1002,7 @@ git commit -m "feat(deploy): add docker-compose with Postgres, MinIO and 4 servi
 4. **Локальный деплой через Aspire** — `dotnet run --project BookShop/BookShop.AppHost`; F5 в VS; что поднимет: Postgres, MinIO (консоль на http://localhost:9001), dashbord otel.
 5. **Локальные секреты** — как работают `appsettings.Local.json` + `.gitignore`; пример заполнения.
 6. **Почему не Kubernetes** — когда K8s/Aspirate становится нужен (маcштабирование, автоскейлинг, 100M DAU цель из design-doc) и как перейти (Aspire manifest → Aspirate → K8s).
-7. **Сборка образа вручную** — `docker build -f BookShop/Dockerfile --build-arg SERVICE=BotApi -t bookshop-botapi BookShop/`.
+7. **Сборка образа вручную** — `docker build -f Dockerfile --build-arg SERVICE=BotApi -t bookshop-botapi .` (из корня репо; DNS: `dotnet build . -p:...` изнутри).
 
 - [ ] **Step 2: Commit**
 
