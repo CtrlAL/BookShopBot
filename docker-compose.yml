@@ -1,0 +1,94 @@
+name: bookshop
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bookshop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bookshop}
+      POSTGRES_DB: ${POSTGRES_DB:-bookshop}
+    ports:
+      - "5432:5432"
+    volumes:
+      - bookshop-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bookshop} -d ${POSTGRES_DB:-bookshop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2024-08-03T04-33-23Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - bookshop-minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bookcatalogservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: BookCatalogService
+    environment:
+      ConnectionStrings__DefaultConnectionString: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-bookshop};Username=${POSTGRES_USER:-bookshop};Password=${POSTGRES_PASSWORD:-bookshop}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bookrecognitionservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: BookRecognitionService
+    environment:
+      DeepSeekConfig__ApiKey: ${DEEPSEEK_API_KEY:-}
+      BookCatalogService__Url: http://bookcatalogservice:8080
+
+  chatapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: ChatApi
+    ports:
+      - "8081:8080"
+
+  botapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: BotApi
+    environment:
+      BotConfig__Token: ${BOT_TOKEN:-}
+      S3__Endpoint: http://minio:9000
+      S3__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
+      S3__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      S3__Bucket: bookshop
+      ConnectionStrings__ChatSession: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-bookshop};Username=${POSTGRES_USER:-bookshop};Password=${POSTGRES_PASSWORD:-bookshop}"
+      BookCatalogService__Url: http://bookcatalogservice:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      bookcatalogservice:
+        condition: service_started
+
+volumes:
+  bookshop-pg-data:
+  bookshop-minio-data:
