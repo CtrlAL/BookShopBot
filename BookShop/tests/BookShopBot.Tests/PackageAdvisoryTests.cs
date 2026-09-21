@@ -8,9 +8,9 @@ public sealed class PackageAdvisoryTests
 {
     private static readonly string[] AffectedProjects =
     [
-        @"BookShop\BookShop.ServiceDefaults\BookShop.ServiceDefaults.csproj",
-        @"BookShop\BookCatalogService\BookCatalogService.csproj",
-        @"BookShop\BookRecognitionService\BookRecognitionService.csproj",
+        @"BookShop\src\BookShop.ServiceDefaults\BookShop.ServiceDefaults.csproj",
+        @"BookShop\src\BookCatalogService\BookCatalogService.csproj",
+        @"BookShop\src\BookRecognitionService\BookRecognitionService.csproj",
     ];
 
     [Fact]

@@ -3,33 +3,33 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11429.125
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.AppHost", "BookShop.AppHost\BookShop.AppHost.csproj", "{AE2EBD39-166A-4DA7-8102-379C25E386ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.AppHost", "src\BookShop.AppHost\BookShop.AppHost.csproj", "{AE2EBD39-166A-4DA7-8102-379C25E386ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.ServiceDefaults", "BookShop.ServiceDefaults\BookShop.ServiceDefaults.csproj", "{253C6D11-15C9-BE54-BC8E-C780DC90ED41}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.ServiceDefaults", "src\BookShop.ServiceDefaults\BookShop.ServiceDefaults.csproj", "{253C6D11-15C9-BE54-BC8E-C780DC90ED41}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chat", "Chat", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSM", "..\ChatFSM\FSM.csproj", "{574ABFEA-8DEA-341F-923E-BD1376558ACC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSM", "src\ChatFSM\Fsm.csproj", "{574ABFEA-8DEA-341F-923E-BD1376558ACC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookAi", "BookAiClient\BookAi.csproj", "{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookAi", "src\BookAiClient\BookAi.csproj", "{501CA3FF-B2ED-46FA-AD16-9514C0BB3D16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ai", "Ai", "{F2E98E79-C30D-432B-AA92-B3CD9F16F791}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoreApi", "CoreApi", "{B66D80A0-432A-47A4-ABE4-3D4964A195C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookCatalogService", "BookCatalogService\BookCatalogService.csproj", "{5EEFEC68-6333-16D4-EB74-701DC65A98ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookCatalogService", "src\BookCatalogService\BookCatalogService.csproj", "{5EEFEC68-6333-16D4-EB74-701DC65A98ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookRecognitionService", "BookRecognitionService\BookRecognitionService.csproj", "{960B6D38-BC27-99C5-999A-04BA9C4A8FB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookRecognitionService", "src\BookRecognitionService\BookRecognitionService.csproj", "{960B6D38-BC27-99C5-999A-04BA9C4A8FB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatApi", "ChatApi\ChatApi.csproj", "{AA540109-F6F7-6B98-F346-AD065BB4999F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatApi", "src\ChatApi\ChatApi.csproj", "{AA540109-F6F7-6B98-F346-AD065BB4999F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShopBot.Tests", "..\tests\BookShopBot.Tests\BookShopBot.Tests.csproj", "{12700D8B-3148-430B-B275-7CC30638365F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShopBot.Tests", "tests\BookShopBot.Tests\BookShopBot.Tests.csproj", "{12700D8B-3148-430B-B275-7CC30638365F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot", "..\TelegramBot\TelegramBot.csproj", "{BCA5C61A-EFFB-4178-9DEB-D0B6ACD13437}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot", "src\TelegramBot\TelegramBot.csproj", "{BCA5C61A-EFFB-4178-9DEB-D0B6ACD13437}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3Tool", "S3Tool\S3Tool.csproj", "{B51A15DE-3991-45ED-8528-8707A3140558}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3Tool", "src\S3Tool\S3Tool.csproj", "{B51A15DE-3991-45ED-8528-8707A3140558}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotApi", "BotApi\BotApi.csproj", "{6A66A216-5E9F-4A4D-B6E5-5746162ACE11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotApi", "src\BotApi\BotApi.csproj", "{6A66A216-5E9F-4A4D-B6E5-5746162ACE11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -25,9 +25,9 @@
     <PackageReference Include="Moq" Version="4.20.72" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\BookShop\S3Tool\S3Tool.csproj" />
-    <ProjectReference Include="..\..\ChatFSM\Fsm.csproj" />
-    <ProjectReference Include="..\..\TelegramBot\TelegramBot.csproj" />
+    <ProjectReference Include="..\..\src\S3Tool\S3Tool.csproj" />
+    <ProjectReference Include="..\..\src\ChatFSM\Fsm.csproj" />
+    <ProjectReference Include="..\..\src\TelegramBot\TelegramBot.csproj" />
   </ItemGroup>
 
 </Project>
