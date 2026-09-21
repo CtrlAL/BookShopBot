@@ -4,11 +4,8 @@ WORKDIR /src
 COPY Directory.Build.props ./
 COPY BookShop/BookShop.sln ./BookShop/
 COPY BookShop/ ./BookShop/
-COPY TelegramBot/ ./TelegramBot/
-COPY ChatFSM/ ./ChatFSM/
-COPY tests/ ./tests/
 RUN dotnet restore BookShop/BookShop.sln
-RUN dotnet publish BookShop/${SERVICE}/${SERVICE}.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish BookShop/src/${SERVICE}/${SERVICE}.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
